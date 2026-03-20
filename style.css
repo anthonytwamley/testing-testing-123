@@ -93,7 +93,7 @@ input[type="text"], select {
 
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
 }
 .plant-card {
@@ -133,24 +133,53 @@ input[type="text"], select {
   grid-template-columns: 1fr 1fr;
   gap: .45rem .9rem;
   font-size: .92rem;
-  margin-bottom: .85rem;
+  margin-bottom: 1rem;
 }
 .label { font-weight: 700; color: #345240; }
-.chips {
+
+.badge-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .85rem .9rem;
+}
+.badge-section {
+  padding-top: .75rem;
+  border-top: 1px solid #e8f0e8;
+}
+.badge-section-full {
+  grid-column: 1 / -1;
+}
+.badge-section h4 {
+  margin: 0 0 .45rem;
+  font-size: .88rem;
+  color: #345240;
+}
+.badges {
   display: flex;
   flex-wrap: wrap;
   gap: .4rem;
-  margin-top: .65rem;
 }
-.chip {
+.badge {
   display: inline-flex;
-  padding: .35rem .55rem;
+  align-items: center;
+  padding: .35rem .58rem;
   border-radius: 999px;
-  background: #f1f7f1;
-  border: 1px solid #d7e6d8;
-  color: #33503f;
   font-size: .82rem;
+  border: 1px solid rgba(0,0,0,0.07);
+  color: #2c3f34;
 }
+.badge-light { background: #fef3c7; }
+.badge-aspect { background: #dbeafe; }
+.badge-soil { background: #ead7c3; }
+.badge-ph { background: #e9d5ff; }
+.badge-season { background: #ccfbf1; }
+.badge-use { background: #fed7aa; }
+.badge-extra { background: #dcfce7; }
+.empty-badge {
+  background: #f3f6f3;
+  color: #6a7d70;
+}
+
 .empty-state {
   padding: 2rem;
   background: white;
@@ -161,4 +190,9 @@ input[type="text"], select {
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; }
   .filters { position: static; }
+}
+@media (max-width: 640px) {
+  .results-grid { grid-template-columns: 1fr; }
+  .meta-grid, .badge-sections { grid-template-columns: 1fr; }
+  .badge-section-full { grid-column: auto; }
 }
