@@ -1,0 +1,212 @@
+let plants = [];
+
+const el = (id) => document.getElementById(id);
+
+const boolFilters = [
+  ["fullSunFilter", "full_sun"],
+  ["partialShadeFilter", "partial_shade"],
+  ["fullShadeFilter", "full_shade"],
+  ["northFilter", "north"],
+  ["eastFilter", "east"],
+  ["southFilter", "south"],
+  ["westFilter", "west"],
+  ["clayFilter", "clay"],
+  ["loamFilter", "loam"],
+  ["sandFilter", "sand"],
+  ["chalkFilter", "chalk"],
+  ["acidFilter", "acid"],
+  ["neutralFilter", "neutral"],
+  ["alkalineFilter", "alkaline"],
+  ["springFilter", "interest_spring"],
+  ["summerFilter", "interest_summer"],
+  ["autumnFilter", "interest_autumn"],
+  ["winterFilter", "interest_winter"],
+  ["wildlifeFilter", "wildlife"],
+  ["deciduousFilter", "deciduous"],
+  ["evergreenFilter", "evergreen"],
+  ["semiEvergreenFilter", "semi_evergreen"],
+  ["lowMaintenanceFilter", "low_maintenance"],
+  ["moderateMaintenanceFilter", "moderate_maintenance"],
+  ["highMaintenanceFilter", "high_maintenance"],
+  ["flowerBorderBedFilter", "flower_border_bed"],
+  ["groundCoverFilter", "ground_cover"],
+  ["hedgingFilter", "hedging"],
+  ["screenFilter", "screen"],
+  ["planterFilter", "planter_patio_container"],
+  ["bankSlopeFilter", "bank_slope"],
+  ["climberFilter", "climber"]
+];
+
+function titleCase(text) {
+  return text
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
+function uniqueTermsFromField(field) {
+  const set = new Set();
+  plants.forEach((plant) => {
+    const value = plant[field];
+    if (!value) return;
+    String(value).split(";").map(v => v.trim()).filter(Boolean).forEach(v => set.add(v));
+  });
+  return [...set].sort((a,b) => a.localeCompare(b));
+}
+
+function populateSelect(selectId, values) {
+  const select = el(selectId);
+  values.forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    select.appendChild(option);
+  });
+}
+
+function lightText(plant) {
+  const items = [];
+  if (plant.full_sun) items.push("Full sun");
+  if (plant.partial_shade) items.push("Partial shade");
+  if (plant.full_shade) items.push("Full shade");
+  return items.join(", ");
+}
+function seasonText(plant) {
+  const items = [];
+  if (plant.interest_spring) items.push("Spring");
+  if (plant.interest_summer) items.push("Summer");
+  if (plant.interest_autumn) items.push("Autumn");
+  if (plant.interest_winter) items.push("Winter");
+  return items.join(", ");
+}
+function conditionChips(plant) {
+  const chips = [];
+  [["north","North"],["east","East"],["south","South"],["west","West"]].forEach(([key,label]) => { if (plant[key]) chips.push(label); });
+  [["clay","Clay"],["loam","Loam"],["sand","Sand"],["chalk","Chalk"]].forEach(([key,label]) => { if (plant[key]) chips.push(label); });
+  [["acid","Acid"],["neutral","Neutral"],["alkaline","Alkaline"]].forEach(([key,label]) => { if (plant[key]) chips.push(label); });
+  if (plant.deciduous) chips.push("Deciduous");
+  if (plant.evergreen) chips.push("Evergreen");
+  if (plant.semi_evergreen) chips.push("Semi-evergreen");
+  if (plant.wildlife) chips.push("Wildlife value");
+  return chips;
+}
+function useChips(plant) {
+  const map = [
+    ["flower_border_bed","Flower border / bed"],
+    ["ground_cover","Ground cover"],
+    ["hedging","Hedging"],
+    ["screen","Screen"],
+    ["planter_patio_container","Planter / patio / container"],
+    ["bank_slope","Bank / slope"],
+    ["climber","Climber"]
+  ];
+  return map.filter(([key]) => plant[key]).map(([,label]) => label);
+}
+
+function matchesTokenField(value, selected) {
+  if (!selected) return true;
+  if (!value) return false;
+  const terms = String(value).split(";").map(v => v.trim().toLowerCase());
+  return terms.includes(selected.toLowerCase());
+}
+
+function filterPlants() {
+  const q = el("searchInput").value.trim().toLowerCase();
+  const type = el("typeFilter").value;
+  const colour = el("colourFilter").value;
+  const feature = el("featureFilter").value;
+
+  const filtered = plants.filter((plant) => {
+    if (q) {
+      const hay = `${plant.latin_name || ""} ${plant.english_name || ""}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (type && plant.plant_type !== type) return false;
+    if (!matchesTokenField(plant.colour, colour)) return false;
+    if (!matchesTokenField(plant.feature, feature)) return false;
+
+    for (const [filterId, key] of boolFilters) {
+      if (el(filterId).checked && !plant[key]) return false;
+    }
+    return true;
+  });
+
+  renderPlants(filtered);
+}
+
+function renderPlants(list) {
+  const results = el("results");
+  const count = el("resultsCount");
+  results.innerHTML = "";
+  count.textContent = `${list.length} plant${list.length === 1 ? "" : "s"} found`;
+
+  if (!list.length) {
+    const div = document.createElement("div");
+    div.className = "empty-state";
+    div.textContent = "No plants match the current filters.";
+    results.appendChild(div);
+    return;
+  }
+
+  const template = el("plantCardTemplate");
+
+  list.forEach((plant) => {
+    const node = template.content.cloneNode(true);
+    node.querySelector(".latin-name").textContent = plant.latin_name || "";
+    node.querySelector(".common-name").textContent = plant.english_name || "";
+    node.querySelector(".type-badge").textContent = plant.plant_type || "";
+    node.querySelector(".height").textContent = plant.height_m ? `${plant.height_m} m` : "—";
+    node.querySelector(".spread").textContent = plant.spread_m ? `${plant.spread_m} m` : "—";
+    node.querySelector(".colour").textContent = plant.colour || "—";
+    node.querySelector(".feature").textContent = plant.feature || "—";
+    node.querySelector(".light").textContent = lightText(plant) || "—";
+    node.querySelector(".season").textContent = seasonText(plant) || "—";
+
+    const conditions = node.querySelector(".conditions");
+    conditionChips(plant).forEach((text) => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = text;
+      conditions.appendChild(chip);
+    });
+
+    const uses = node.querySelector(".uses");
+    useChips(plant).forEach((text) => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = text;
+      uses.appendChild(chip);
+    });
+
+    results.appendChild(node);
+  });
+}
+
+function wireEvents() {
+  document.querySelectorAll("input, select").forEach((control) => {
+    control.addEventListener("input", filterPlants);
+    control.addEventListener("change", filterPlants);
+  });
+  el("resetBtn").addEventListener("click", () => {
+    document.querySelectorAll("input[type='checkbox']").forEach(cb => { cb.checked = false; });
+    document.querySelectorAll("select").forEach(sel => { sel.value = ""; });
+    el("searchInput").value = "";
+    filterPlants();
+  });
+}
+
+fetch("plants.json")
+  .then((response) => response.json())
+  .then((data) => {
+    plants = data;
+
+    populateSelect("typeFilter", [...new Set(plants.map(p => p.plant_type).filter(Boolean))].sort((a,b) => a.localeCompare(b)));
+    populateSelect("colourFilter", uniqueTermsFromField("colour"));
+    populateSelect("featureFilter", uniqueTermsFromField("feature"));
+
+    wireEvents();
+    filterPlants();
+  })
+  .catch((error) => {
+    console.error(error);
+    el("resultsCount").textContent = "Could not load plant data.";
+  });

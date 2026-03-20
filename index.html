@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plant Selector</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <h1>Plant Selector</h1>
+      <p>Filter plants by type, growing conditions, season of interest, maintenance, wildlife value, and use.</p>
+    </div>
+  </header>
+
+  <main class="wrap layout">
+    <aside class="panel filters">
+      <div class="panel-header">
+        <h2>Filters</h2>
+        <button id="resetBtn" class="ghost-btn" type="button">Reset</button>
+      </div>
+
+      <label>
+        <span>Search name</span>
+        <input id="searchInput" type="text" placeholder="Latin or common name" />
+      </label>
+
+      <label>
+        <span>Plant type</span>
+        <select id="typeFilter">
+          <option value="">All</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Colour</span>
+        <select id="colourFilter">
+          <option value="">All</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Feature of interest</span>
+        <select id="featureFilter">
+          <option value="">All</option>
+        </select>
+      </label>
+
+      <div class="filter-group">
+        <h3>Light</h3>
+        <label class="check"><input type="checkbox" id="fullSunFilter"> Full sun</label>
+        <label class="check"><input type="checkbox" id="partialShadeFilter"> Partial shade</label>
+        <label class="check"><input type="checkbox" id="fullShadeFilter"> Full shade</label>
+      </div>
+
+      <div class="filter-group">
+        <h3>Aspect</h3>
+        <label class="check"><input type="checkbox" id="northFilter"> North</label>
+        <label class="check"><input type="checkbox" id="eastFilter"> East</label>
+        <label class="check"><input type="checkbox" id="southFilter"> South</label>
+        <label class="check"><input type="checkbox" id="westFilter"> West</label>
+      </div>
+
+      <div class="filter-group">
+        <h3>Soil type</h3>
+        <label class="check"><input type="checkbox" id="clayFilter"> Clay</label>
+        <label class="check"><input type="checkbox" id="loamFilter"> Loam</label>
+        <label class="check"><input type="checkbox" id="sandFilter"> Sand</label>
+        <label class="check"><input type="checkbox" id="chalkFilter"> Chalk</label>
+      </div>
+
+      <div class="filter-group">
+        <h3>Soil acidity</h3>
+        <label class="check"><input type="checkbox" id="acidFilter"> Acid</label>
+        <label class="check"><input type="checkbox" id="neutralFilter"> Neutral</label>
+        <label class="check"><input type="checkbox" id="alkalineFilter"> Alkaline</label>
+      </div>
+
+      <div class="filter-group">
+        <h3>Season of interest</h3>
+        <label class="check"><input type="checkbox" id="springFilter"> Spring</label>
+        <label class="check"><input type="checkbox" id="summerFilter"> Summer</label>
+        <label class="check"><input type="checkbox" id="autumnFilter"> Autumn</label>
+        <label class="check"><input type="checkbox" id="winterFilter"> Winter</label>
+      </div>
+
+      <div class="filter-group">
+        <h3>Other</h3>
+        <label class="check"><input type="checkbox" id="wildlifeFilter"> Wildlife value</label>
+        <label class="check"><input type="checkbox" id="deciduousFilter"> Deciduous</label>
+        <label class="check"><input type="checkbox" id="evergreenFilter"> Evergreen</label>
+        <label class="check"><input type="checkbox" id="semiEvergreenFilter"> Semi-evergreen</label>
+        <label class="check"><input type="checkbox" id="lowMaintenanceFilter"> Low maintenance</label>
+        <label class="check"><input type="checkbox" id="moderateMaintenanceFilter"> Moderate maintenance</label>
+        <label class="check"><input type="checkbox" id="highMaintenanceFilter"> High maintenance</label>
+      </div>
+
+      <div class="filter-group">
+        <h3>Suitable use</h3>
+        <label class="check"><input type="checkbox" id="flowerBorderBedFilter"> Flower border / bed</label>
+        <label class="check"><input type="checkbox" id="groundCoverFilter"> Ground cover</label>
+        <label class="check"><input type="checkbox" id="hedgingFilter"> Hedging</label>
+        <label class="check"><input type="checkbox" id="screenFilter"> Screen</label>
+        <label class="check"><input type="checkbox" id="planterFilter"> Planter / patio / container</label>
+        <label class="check"><input type="checkbox" id="bankSlopeFilter"> Bank / slope</label>
+        <label class="check"><input type="checkbox" id="climberFilter"> Climber</label>
+      </div>
+    </aside>
+
+    <section class="results-area">
+      <div class="panel topbar">
+        <div>
+          <h2>Results</h2>
+          <p id="resultsCount">Loading plants…</p>
+        </div>
+      </div>
+      <div id="results" class="results-grid"></div>
+    </section>
+  </main>
+
+  <template id="plantCardTemplate">
+    <article class="plant-card">
+      <div class="plant-card-content">
+        <div class="card-head">
+          <div>
+            <h3 class="latin-name"></h3>
+            <p class="common-name"></p>
+          </div>
+          <span class="type-badge"></span>
+        </div>
+        <div class="meta-grid">
+          <div><span class="label">Height:</span> <span class="height"></span></div>
+          <div><span class="label">Spread:</span> <span class="spread"></span></div>
+          <div><span class="label">Colour:</span> <span class="colour"></span></div>
+          <div><span class="label">Feature:</span> <span class="feature"></span></div>
+          <div><span class="label">Light:</span> <span class="light"></span></div>
+          <div><span class="label">Season:</span> <span class="season"></span></div>
+        </div>
+        <div class="chips conditions"></div>
+        <div class="chips uses"></div>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
