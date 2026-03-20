@@ -37,12 +37,6 @@ const boolFilters = [
   ["climberFilter", "climber"]
 ];
 
-function titleCase(text) {
-  return text
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (m) => m.toUpperCase());
-}
-
 function uniqueTermsFromField(field) {
   const set = new Set();
   plants.forEach((plant) => {
@@ -63,34 +57,74 @@ function populateSelect(selectId, values) {
   });
 }
 
-function lightText(plant) {
-  const items = [];
-  if (plant.full_sun) items.push("Full sun");
-  if (plant.partial_shade) items.push("Partial shade");
-  if (plant.full_shade) items.push("Full shade");
-  return items.join(", ");
-}
 function seasonText(plant) {
   const items = [];
   if (plant.interest_spring) items.push("Spring");
   if (plant.interest_summer) items.push("Summer");
   if (plant.interest_autumn) items.push("Autumn");
   if (plant.interest_winter) items.push("Winter");
-  return items.join(", ");
+  return items;
 }
-function conditionChips(plant) {
-  const chips = [];
-  [["north","North"],["east","East"],["south","South"],["west","West"]].forEach(([key,label]) => { if (plant[key]) chips.push(label); });
-  [["clay","Clay"],["loam","Loam"],["sand","Sand"],["chalk","Chalk"]].forEach(([key,label]) => { if (plant[key]) chips.push(label); });
-  [["acid","Acid"],["neutral","Neutral"],["alkaline","Alkaline"]].forEach(([key,label]) => { if (plant[key]) chips.push(label); });
-  if (plant.deciduous) chips.push("Deciduous");
-  if (plant.evergreen) chips.push("Evergreen");
-  if (plant.semi_evergreen) chips.push("Semi-evergreen");
-  if (plant.wildlife) chips.push("Wildlife value");
-  return chips;
+
+function makeBadge(text, group, empty = false) {
+  const span = document.createElement("span");
+  span.className = `badge badge-${group}${empty ? " empty-badge" : ""}`;
+  span.textContent = text;
+  return span;
 }
-function useChips(plant) {
-  const map = [
+
+function addBadges(container, labels, group) {
+  container.innerHTML = "";
+  if (!labels.length) {
+    container.appendChild(makeBadge("—", group, true));
+    return;
+  }
+  labels.forEach((label) => container.appendChild(makeBadge(label, group)));
+}
+
+function tokensFromField(value) {
+  if (!value) return [];
+  return String(value).split(";").map(v => v.trim()).filter(Boolean);
+}
+
+function getAspectBadges(plant) {
+  return [["north","North"],["east","East"],["south","South"],["west","West"]]
+    .filter(([key]) => plant[key])
+    .map(([,label]) => label);
+}
+
+function getSoilBadges(plant) {
+  return [["clay","Clay"],["loam","Loam"],["sand","Sand"],["chalk","Chalk"]]
+    .filter(([key]) => plant[key])
+    .map(([,label]) => label);
+}
+
+function getPhBadges(plant) {
+  return [["acid","Acid"],["neutral","Neutral"],["alkaline","Alkaline"]]
+    .filter(([key]) => plant[key])
+    .map(([,label]) => label);
+}
+
+function getLightBadges(plant) {
+  return [["full_sun","Full sun"],["partial_shade","Partial shade"],["full_shade","Full shade"]]
+    .filter(([key]) => plant[key])
+    .map(([,label]) => label);
+}
+
+function getExtraBadges(plant) {
+  const labels = [];
+  if (plant.deciduous) labels.push("Deciduous");
+  if (plant.evergreen) labels.push("Evergreen");
+  if (plant.semi_evergreen) labels.push("Semi-evergreen");
+  if (plant.wildlife) labels.push("Wildlife value");
+  if (plant.low_maintenance) labels.push("Low maintenance");
+  if (plant.moderate_maintenance) labels.push("Moderate maintenance");
+  if (plant.high_maintenance) labels.push("High maintenance");
+  return labels;
+}
+
+function getUseBadges(plant) {
+  return [
     ["flower_border_bed","Flower border / bed"],
     ["ground_cover","Ground cover"],
     ["hedging","Hedging"],
@@ -98,14 +132,13 @@ function useChips(plant) {
     ["planter_patio_container","Planter / patio / container"],
     ["bank_slope","Bank / slope"],
     ["climber","Climber"]
-  ];
-  return map.filter(([key]) => plant[key]).map(([,label]) => label);
+  ].filter(([key]) => plant[key]).map(([,label]) => label);
 }
 
 function matchesTokenField(value, selected) {
   if (!selected) return true;
   if (!value) return false;
-  const terms = String(value).split(";").map(v => v.trim().toLowerCase());
+  const terms = tokensFromField(value).map(v => v.toLowerCase());
   return terms.includes(selected.toLowerCase());
 }
 
@@ -158,24 +191,14 @@ function renderPlants(list) {
     node.querySelector(".spread").textContent = plant.spread_m ? `${plant.spread_m} m` : "—";
     node.querySelector(".colour").textContent = plant.colour || "—";
     node.querySelector(".feature").textContent = plant.feature || "—";
-    node.querySelector(".light").textContent = lightText(plant) || "—";
-    node.querySelector(".season").textContent = seasonText(plant) || "—";
 
-    const conditions = node.querySelector(".conditions");
-    conditionChips(plant).forEach((text) => {
-      const chip = document.createElement("span");
-      chip.className = "chip";
-      chip.textContent = text;
-      conditions.appendChild(chip);
-    });
-
-    const uses = node.querySelector(".uses");
-    useChips(plant).forEach((text) => {
-      const chip = document.createElement("span");
-      chip.className = "chip";
-      chip.textContent = text;
-      uses.appendChild(chip);
-    });
+    addBadges(node.querySelector(".light-badges"), getLightBadges(plant), "light");
+    addBadges(node.querySelector(".aspect-badges"), getAspectBadges(plant), "aspect");
+    addBadges(node.querySelector(".soil-badges"), getSoilBadges(plant), "soil");
+    addBadges(node.querySelector(".ph-badges"), getPhBadges(plant), "ph");
+    addBadges(node.querySelector(".season-badges"), seasonText(plant), "season");
+    addBadges(node.querySelector(".extra-badges"), getExtraBadges(plant), "extra");
+    addBadges(node.querySelector(".use-badges"), getUseBadges(plant), "use");
 
     results.appendChild(node);
   });
