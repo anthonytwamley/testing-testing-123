@@ -57,88 +57,25 @@ function populateSelect(selectId, values) {
   });
 }
 
-function seasonText(plant) {
-  const items = [];
-  if (plant.interest_spring) items.push("Spring");
-  if (plant.interest_summer) items.push("Summer");
-  if (plant.interest_autumn) items.push("Autumn");
-  if (plant.interest_winter) items.push("Winter");
-  return items;
+function makeBadge(label, group) {
+  return `<span class="chip chip-${group}">${label}</span>`;
 }
 
-function makeBadge(text, group, empty = false) {
-  const span = document.createElement("span");
-  span.className = `badge badge-${group}${empty ? " empty-badge" : ""}`;
-  span.textContent = text;
-  return span;
-}
-
-function addBadges(container, labels, group) {
-  container.innerHTML = "";
-  if (!labels.length) {
-    container.appendChild(makeBadge("—", group, true));
-    return;
+function imageBlock(plant) {
+  if (plant.image && String(plant.image).trim()) {
+    return `
+      <figure class="plant-img-wrap">
+        <img src="${plant.image}" alt="${plant.latin_name}" class="plant-img" loading="lazy" onerror="this.closest('.plant-img-wrap').outerHTML='<div class=&quot;plant-img-placeholder&quot;>Image unavailable</div>';">
+      </figure>
+    `;
   }
-  labels.forEach((label) => container.appendChild(makeBadge(label, group)));
-}
-
-function tokensFromField(value) {
-  if (!value) return [];
-  return String(value).split(";").map(v => v.trim()).filter(Boolean);
-}
-
-function getAspectBadges(plant) {
-  return [["north","North"],["east","East"],["south","South"],["west","West"]]
-    .filter(([key]) => plant[key])
-    .map(([,label]) => label);
-}
-
-function getSoilBadges(plant) {
-  return [["clay","Clay"],["loam","Loam"],["sand","Sand"],["chalk","Chalk"]]
-    .filter(([key]) => plant[key])
-    .map(([,label]) => label);
-}
-
-function getPhBadges(plant) {
-  return [["acid","Acid"],["neutral","Neutral"],["alkaline","Alkaline"]]
-    .filter(([key]) => plant[key])
-    .map(([,label]) => label);
-}
-
-function getLightBadges(plant) {
-  return [["full_sun","Full sun"],["partial_shade","Partial shade"],["full_shade","Full shade"]]
-    .filter(([key]) => plant[key])
-    .map(([,label]) => label);
-}
-
-function getExtraBadges(plant) {
-  const labels = [];
-  if (plant.deciduous) labels.push("Deciduous");
-  if (plant.evergreen) labels.push("Evergreen");
-  if (plant.semi_evergreen) labels.push("Semi-evergreen");
-  if (plant.wildlife) labels.push("Wildlife value");
-  if (plant.low_maintenance) labels.push("Low maintenance");
-  if (plant.moderate_maintenance) labels.push("Moderate maintenance");
-  if (plant.high_maintenance) labels.push("High maintenance");
-  return labels;
-}
-
-function getUseBadges(plant) {
-  return [
-    ["flower_border_bed","Flower border / bed"],
-    ["ground_cover","Ground cover"],
-    ["hedging","Hedging"],
-    ["screen","Screen"],
-    ["planter_patio_container","Planter / patio / container"],
-    ["bank_slope","Bank / slope"],
-    ["climber","Climber"]
-  ].filter(([key]) => plant[key]).map(([,label]) => label);
+  return `<div class="plant-img-placeholder">No image added yet</div>`;
 }
 
 function matchesTokenField(value, selected) {
   if (!selected) return true;
   if (!value) return false;
-  const terms = tokensFromField(value).map(v => v.toLowerCase());
+  const terms = String(value).split(";").map(v => v.trim().toLowerCase());
   return terms.includes(selected.toLowerCase());
 }
 
@@ -153,12 +90,13 @@ function filterPlants() {
       const hay = `${plant.latin_name || ""} ${plant.english_name || ""}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
+
     if (type && plant.plant_type !== type) return false;
     if (!matchesTokenField(plant.colour, colour)) return false;
     if (!matchesTokenField(plant.feature, feature)) return false;
 
-    for (const [filterId, key] of boolFilters) {
-      if (el(filterId).checked && !plant[key]) return false;
+    for (const [inputId, field] of boolFilters) {
+      if (el(inputId).checked && !plant[field]) return false;
     }
     return true;
   });
@@ -166,70 +104,114 @@ function filterPlants() {
   renderPlants(filtered);
 }
 
-function renderPlants(list) {
-  const results = el("results");
-  const count = el("resultsCount");
-  results.innerHTML = "";
-  count.textContent = `${list.length} plant${list.length === 1 ? "" : "s"} found`;
+function renderPlants(filtered) {
+  const count = el("resultCount");
+  const grid = el("resultsGrid");
+  count.textContent = `${filtered.length} plant${filtered.length === 1 ? "" : "s"} found`;
 
-  if (!list.length) {
-    const div = document.createElement("div");
-    div.className = "empty-state";
-    div.textContent = "No plants match the current filters.";
-    results.appendChild(div);
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state">No plants match the current filters.</div>`;
     return;
   }
 
-  const template = el("plantCardTemplate");
+  grid.innerHTML = filtered.map((plant) => {
+    const lightBadges = [];
+    if (plant.full_sun) lightBadges.push(makeBadge("Full sun", "light"));
+    if (plant.partial_shade) lightBadges.push(makeBadge("Partial shade", "light"));
+    if (plant.full_shade) lightBadges.push(makeBadge("Full shade", "light"));
 
-  list.forEach((plant) => {
-    const node = template.content.cloneNode(true);
-    node.querySelector(".latin-name").textContent = plant.latin_name || "";
-    node.querySelector(".common-name").textContent = plant.english_name || "";
-    node.querySelector(".type-badge").textContent = plant.plant_type || "";
-    node.querySelector(".height").textContent = plant.height_m ? `${plant.height_m} m` : "—";
-    node.querySelector(".spread").textContent = plant.spread_m ? `${plant.spread_m} m` : "—";
-    node.querySelector(".colour").textContent = plant.colour || "—";
-    node.querySelector(".feature").textContent = plant.feature || "—";
+    const aspectBadges = [];
+    if (plant.north) aspectBadges.push(makeBadge("North", "aspect"));
+    if (plant.east) aspectBadges.push(makeBadge("East", "aspect"));
+    if (plant.south) aspectBadges.push(makeBadge("South", "aspect"));
+    if (plant.west) aspectBadges.push(makeBadge("West", "aspect"));
 
-    addBadges(node.querySelector(".light-badges"), getLightBadges(plant), "light");
-    addBadges(node.querySelector(".aspect-badges"), getAspectBadges(plant), "aspect");
-    addBadges(node.querySelector(".soil-badges"), getSoilBadges(plant), "soil");
-    addBadges(node.querySelector(".ph-badges"), getPhBadges(plant), "ph");
-    addBadges(node.querySelector(".season-badges"), seasonText(plant), "season");
-    addBadges(node.querySelector(".extra-badges"), getExtraBadges(plant), "extra");
-    addBadges(node.querySelector(".use-badges"), getUseBadges(plant), "use");
+    const soilBadges = [];
+    if (plant.clay) soilBadges.push(makeBadge("Clay", "soil"));
+    if (plant.loam) soilBadges.push(makeBadge("Loam", "soil"));
+    if (plant.sand) soilBadges.push(makeBadge("Sand", "soil"));
+    if (plant.chalk) soilBadges.push(makeBadge("Chalk", "soil"));
 
-    results.appendChild(node);
-  });
+    const phBadges = [];
+    if (plant.acid) phBadges.push(makeBadge("Acid", "ph"));
+    if (plant.neutral) phBadges.push(makeBadge("Neutral", "ph"));
+    if (plant.alkaline) phBadges.push(makeBadge("Alkaline", "ph"));
+
+    const seasonBadges = [];
+    if (plant.interest_spring) seasonBadges.push(makeBadge("Spring", "season"));
+    if (plant.interest_summer) seasonBadges.push(makeBadge("Summer", "season"));
+    if (plant.interest_autumn) seasonBadges.push(makeBadge("Autumn", "season"));
+    if (plant.interest_winter) seasonBadges.push(makeBadge("Winter", "season"));
+
+    const useBadges = [];
+    if (plant.flower_border_bed) useBadges.push(makeBadge("Border/bed", "use"));
+    if (plant.ground_cover) useBadges.push(makeBadge("Ground cover", "use"));
+    if (plant.hedging) useBadges.push(makeBadge("Hedging", "use"));
+    if (plant.screen) useBadges.push(makeBadge("Screen", "use"));
+    if (plant.planter_patio_container) useBadges.push(makeBadge("Patio/container", "use"));
+    if (plant.bank_slope) useBadges.push(makeBadge("Bank/slope", "use"));
+    if (plant.climber) useBadges.push(makeBadge("Climber", "use"));
+
+    const otherBadges = [];
+    if (plant.deciduous) otherBadges.push(makeBadge("Deciduous", "other"));
+    if (plant.evergreen) otherBadges.push(makeBadge("Evergreen", "other"));
+    if (plant.semi_evergreen) otherBadges.push(makeBadge("Semi-evergreen", "other"));
+    if (plant.wildlife) otherBadges.push(makeBadge("Wildlife value", "other"));
+    if (plant.low_maintenance) otherBadges.push(makeBadge("Low maintenance", "other"));
+    if (plant.moderate_maintenance) otherBadges.push(makeBadge("Moderate maintenance", "other"));
+    if (plant.high_maintenance) otherBadges.push(makeBadge("High maintenance", "other"));
+
+    return `
+      <article class="plant-card">
+        ${imageBlock(plant)}
+        <div class="plant-card-content">
+          <div class="card-head">
+            <div>
+              <h3 class="latin-name">${plant.latin_name}</h3>
+              <p class="common-name">${plant.english_name || ""}</p>
+            </div>
+            <span class="type-badge">${plant.plant_type || ""}</span>
+          </div>
+
+          <div class="meta-grid">
+            <div><span class="label">Height:</span> ${plant.height_m ?? ""} m</div>
+            <div><span class="label">Spread:</span> ${plant.spread_m ?? ""} m</div>
+            <div><span class="label">Colour:</span> ${plant.colour || ""}</div>
+            <div><span class="label">Feature:</span> ${plant.feature || ""}</div>
+          </div>
+
+          ${lightBadges.length ? `<div><span class="label">Light</span><div class="chips">${lightBadges.join("")}</div></div>` : ""}
+          ${aspectBadges.length ? `<div><span class="label">Aspect</span><div class="chips">${aspectBadges.join("")}</div></div>` : ""}
+          ${soilBadges.length ? `<div><span class="label">Soil</span><div class="chips">${soilBadges.join("")}</div></div>` : ""}
+          ${phBadges.length ? `<div><span class="label">pH</span><div class="chips">${phBadges.join("")}</div></div>` : ""}
+          ${seasonBadges.length ? `<div><span class="label">Season of interest</span><div class="chips">${seasonBadges.join("")}</div></div>` : ""}
+          ${useBadges.length ? `<div><span class="label">Uses</span><div class="chips">${useBadges.join("")}</div></div>` : ""}
+          ${otherBadges.length ? `<div><span class="label">Other</span><div class="chips">${otherBadges.join("")}</div></div>` : ""}
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
-function wireEvents() {
-  document.querySelectorAll("input, select").forEach((control) => {
-    control.addEventListener("input", filterPlants);
-    control.addEventListener("change", filterPlants);
-  });
-  el("resetBtn").addEventListener("click", () => {
-    document.querySelectorAll("input[type='checkbox']").forEach(cb => { cb.checked = false; });
-    document.querySelectorAll("select").forEach(sel => { sel.value = ""; });
-    el("searchInput").value = "";
-    filterPlants();
-  });
+function resetFilters() {
+  document.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
+  document.querySelectorAll('select').forEach(s => s.value = "");
+  el("searchInput").value = "";
+  filterPlants();
 }
 
 fetch("plants.json")
-  .then((response) => response.json())
+  .then((res) => res.json())
   .then((data) => {
     plants = data;
-
-    populateSelect("typeFilter", [...new Set(plants.map(p => p.plant_type).filter(Boolean))].sort((a,b) => a.localeCompare(b)));
+    populateSelect("typeFilter", [...new Set(plants.map(p => p.plant_type).filter(Boolean))].sort());
     populateSelect("colourFilter", uniqueTermsFromField("colour"));
     populateSelect("featureFilter", uniqueTermsFromField("feature"));
-
-    wireEvents();
     filterPlants();
-  })
-  .catch((error) => {
-    console.error(error);
-    el("resultsCount").textContent = "Could not load plant data.";
+
+    el("searchInput").addEventListener("input", filterPlants);
+    document.querySelectorAll("select, input[type='checkbox']").forEach((node) => {
+      if (node.id !== "searchInput") node.addEventListener("change", filterPlants);
+    });
+    el("resetBtn").addEventListener("click", resetFilters);
   });
