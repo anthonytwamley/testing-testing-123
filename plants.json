@@ -2,7 +2,7 @@
   {
     "latin_name": "Quercus robur",
     "english_name": "Oak",
-    "image": "",
+    "image": "images/quercus_robur.jpg",
     "plant_type": "Tree",
     "full_sun": true,
     "partial_shade": true,
@@ -128,7 +128,7 @@
   {
     "latin_name": "Betula pendula",
     "english_name": "Silver Birch",
-    "image": "",
+    "image": "images/betula_pendula.jpg",
     "plant_type": "Tree",
     "full_sun": true,
     "partial_shade": true,
@@ -380,7 +380,7 @@
   {
     "latin_name": "Taxus baccata",
     "english_name": "Yew",
-    "image": "",
+    "image": "images/taxus_baccata.jpg",
     "plant_type": "Tree",
     "full_sun": true,
     "partial_shade": true,
