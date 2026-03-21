@@ -21,31 +21,10 @@
         <button id="resetBtn" class="ghost-btn" type="button">Reset</button>
       </div>
 
-      <label>
-        <span>Search name</span>
-        <input id="searchInput" type="text" placeholder="Latin or common name" />
-      </label>
-
-      <label>
-        <span>Plant type</span>
-        <select id="typeFilter">
-          <option value="">All</option>
-        </select>
-      </label>
-
-      <label>
-        <span>Colour</span>
-        <select id="colourFilter">
-          <option value="">All</option>
-        </select>
-      </label>
-
-      <label>
-        <span>Feature of interest</span>
-        <select id="featureFilter">
-          <option value="">All</option>
-        </select>
-      </label>
+      <label><span>Search name</span><input id="searchInput" type="text" placeholder="Latin or common name" /></label>
+      <label><span>Plant type</span><select id="typeFilter"><option value="">All</option></select></label>
+      <label><span>Colour</span><select id="colourFilter"><option value="">All</option></select></label>
+      <label><span>Feature of interest</span><select id="featureFilter"><option value="">All</option></select></label>
 
       <div class="filter-group">
         <h3>Light</h3>
@@ -97,7 +76,7 @@
       </div>
 
       <div class="filter-group">
-        <h3>Suitable use</h3>
+        <h3>Uses</h3>
         <label class="check"><input type="checkbox" id="flowerBorderBedFilter"> Flower border / bed</label>
         <label class="check"><input type="checkbox" id="groundCoverFilter"> Ground cover</label>
         <label class="check"><input type="checkbox" id="hedgingFilter"> Hedging</label>
@@ -108,68 +87,16 @@
       </div>
     </aside>
 
-    <section class="results-area">
+    <section>
       <div class="panel topbar">
         <div>
           <h2>Results</h2>
-          <p id="resultsCount">Loading plants…</p>
+          <p id="resultCount">Loading plants…</p>
         </div>
       </div>
-      <div id="results" class="results-grid"></div>
+      <div id="resultsGrid" class="results-grid"></div>
     </section>
   </main>
-
-  <template id="plantCardTemplate">
-    <article class="plant-card">
-      <div class="plant-card-content">
-        <div class="card-head">
-          <div>
-            <h3 class="latin-name"></h3>
-            <p class="common-name"></p>
-          </div>
-          <span class="type-badge"></span>
-        </div>
-
-        <div class="meta-grid">
-          <div><span class="label">Height:</span> <span class="height"></span></div>
-          <div><span class="label">Spread:</span> <span class="spread"></span></div>
-          <div><span class="label">Colour:</span> <span class="colour"></span></div>
-          <div><span class="label">Feature:</span> <span class="feature"></span></div>
-        </div>
-
-        <div class="badge-sections">
-          <section class="badge-section">
-            <h4>Light</h4>
-            <div class="badges light-badges"></div>
-          </section>
-          <section class="badge-section">
-            <h4>Aspect</h4>
-            <div class="badges aspect-badges"></div>
-          </section>
-          <section class="badge-section">
-            <h4>Soil</h4>
-            <div class="badges soil-badges"></div>
-          </section>
-          <section class="badge-section">
-            <h4>pH</h4>
-            <div class="badges ph-badges"></div>
-          </section>
-          <section class="badge-section">
-            <h4>Season</h4>
-            <div class="badges season-badges"></div>
-          </section>
-          <section class="badge-section">
-            <h4>Foliage & other</h4>
-            <div class="badges extra-badges"></div>
-          </section>
-          <section class="badge-section badge-section-full">
-            <h4>Suitable use</h4>
-            <div class="badges use-badges"></div>
-          </section>
-        </div>
-      </div>
-    </article>
-  </template>
 
   <script src="script.js"></script>
 </body>
